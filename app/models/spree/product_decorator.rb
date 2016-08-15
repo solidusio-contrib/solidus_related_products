@@ -76,19 +76,18 @@ Spree::Product.class_eval do
   # Uses the Relations to find all the related items, and then filters
   # them using +Product.relation_filter+ to remove unwanted items.
   def relations_for_relation_type(relation_type)
-    # Find all the relations that belong to us for this RelationType, ordered by position
-    related_ids = relations.where(relation_type_id: relation_type.id).order(:position).select(:related_to_id)
-
-    # Construct a query for all these records
-    result = self.class.where(id: related_ids)
+    spree_products = self.class.table_name
+    spree_relations = Spree::Relation.table_name
+    # Find all the products that are related to us for this RelationType
+    result = self.class
+               .joins("INNER JOIN #{spree_relations} on #{spree_products}.id = #{spree_relations}.related_to_id and #{spree_relations}.related_to_type = '#{self.class}'")
+               .where(spree_relations => { relatable_id: id, relation_type_id: relation_type.id })
 
     # Merge in the relation_filter if it's available
     result = result.merge(self.class.relation_filter) if relation_filter
 
-    # make sure results are in same order as related_ids array  (position order)
-    if result.present?
-      result.where(id: related_ids).order(:position)
-    end
+    # Order results by position
+    result = result.order("#{spree_relations}.position")
 
     result
   end
