@@ -18,6 +18,8 @@ gem 'solidus_related_products'
 Run:
 ```sh
 $ bundle install
+$ bundle exec rake railties:install:migrations
+$ bundle exec rake db:migrate
 $ bundle exec rails g solidus_related_products:install
 ```
 
