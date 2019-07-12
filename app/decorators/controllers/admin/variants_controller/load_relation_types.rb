@@ -5,7 +5,7 @@ module SolidusRelatedProducts
     module VariantsController
       module LoadRelationTypes
         def self.prepended(base)
-          base.before_action :load_relation_types, only: [:edit]
+          base.before_action :load_relation_types, only: %i[edit update]
         end
 
         private
