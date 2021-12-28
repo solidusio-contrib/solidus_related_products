@@ -35,7 +35,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'deface', '~> 1.0'
 
   spec.add_development_dependency 'solidus_dev_support', '~> 2.3'
-  spec.add_development_dependency 'autoprefixer-rails', '~> 10.2.5'
+  spec.add_development_dependency 'autoprefixer-rails', '~> 10.4.0'
   spec.add_development_dependency 'rspec-activemodel-mocks'
   spec.add_development_dependency 'shoulda-matchers'
   spec.add_development_dependency 'webdrivers'
