@@ -6,41 +6,34 @@ module SolidusRelatedProducts
       def self.prepended(base)
         base.extend ClassMethods
 
-        base.has_many :relations, -> { order(:position) }, as: :relatable
+        base.has_many :relations, -> { order(:position) }, as: :relatable, dependent: :destroy
 
         # When a Spree::Variant is destroyed, we also want to destroy all Spree::Relations
         # "from" it as well as "to" it.
-        base.after_discard :destroy_variant_relations if base.respond_to?(:after_discard)
-        base.after_destroy :destroy_variant_relations
+        base.after_discard :destroy_variant_relations_to if base.respond_to?(:after_discard)
+        base.after_destroy :destroy_variant_relations_to
       end
 
       module ClassMethods
         # Returns all the Spree::RelationType's which apply_to this class.
         def relation_types
           Spree::RelationType.where(applies_from: to_s)
-                             .where('applies_to IN (?)', [to_s, Spree::Product.to_s]).order(:name)
+                             .where(applies_to: [to_s, Spree::Product.to_s])
+                             .order(:name)
         end
 
         def relation_filter_for_products
-          Spree::Product.where('spree_products.deleted_at' => nil)
-                        .where('spree_products.available_on IS NOT NULL')
-                        .where('spree_products.available_on <= ?', Time.zone.now)
-                        .references(self)
+          Spree::Product.available
         end
 
         def relation_filter_for_variants
-          Spree::Variant.joins(:product)
-                        .where('spree_products.deleted_at' => nil)
-                        .where('spree_products.available_on IS NOT NULL')
-                        .where('spree_products.available_on <= ?', Time.zone.now)
-                        .references(self)
+          Spree::Variant.joins(:product).merge(Spree::Product.available)
         end
 
         def relation_filter_for_relation_type(relation_type)
-          if relation_type.applies_to == 'Spree::Product'
-            relation_filter_for_products
-          elsif relation_type.applies_to == 'Spree::Variant'
-            relation_filter_for_variants
+          case relation_type.applies_to
+          when 'Spree::Product' then relation_filter_for_products
+          when 'Spree::Variant' then relation_filter_for_variants
           end
         end
       end
@@ -50,30 +43,24 @@ module SolidusRelatedProducts
       #
       # If so, it calls relations_for_relation_type. Otherwise it passes
       # it up the inheritance chain.
-      # rubocop:disable Style/MissingRespondToMissing
       def method_missing(method, *args)
         return super if ::SolidusRelatedProducts.config[:no_conflict]
-        # Fix for Ruby 1.9
         raise NoMethodError if method == :to_ary
 
         relation_type = find_relation_type(method)
-        if relation_type.nil?
-          super
-        else
-          relations_for_relation_type(relation_type)
-        end
+        relation_type ? relations_for_relation_type(relation_type) : super
       end
-      # rubocop:enable Style/MissingRespondToMissing
+
+      def respond_to_missing?(method, include_private = false)
+        find_relation_type(method).present? || super
+      end
 
       def has_related_products?(relation_method)
         find_relation_type(relation_method).present?
       end
 
-      def destroy_variant_relations
-        # First we destroy relationships "from" this Variant to others.
-        relations.destroy_all
-        # Next we destroy relationships "to" this Variant.
-        Spree::Relation.where(related_to_type: self.class.to_s).where(related_to_id: id).destroy_all
+      def destroy_variant_relations_to
+        Spree::Relation.where(related_to_type: self.class.to_s, related_to_id: id).destroy_all
       end
 
       private
@@ -93,7 +80,8 @@ module SolidusRelatedProducts
       # them using +relation_filter_for_relation_type+ to remove unwanted items.
       def relations_for_relation_type(relation_type)
         # Find all the relations that belong to us for this RelationType, ordered by position
-        related_ids = relations.where(relation_type_id: relation_type.id).order(:position).select(:related_to_id)
+        related_ids = relations.where(relation_type_id: relation_type.id).order(:position).pluck(:related_to_id)
+        return if related_ids.empty?
 
         # Construct a query for all these records
         result = relation_type.applies_to.constantize.where(id: related_ids)
@@ -102,11 +90,7 @@ module SolidusRelatedProducts
         result = result.merge(relation_filter_for_relation_type(relation_type)) if relation_filter_for_relation_type(relation_type)
 
         # make sure results are in same order as related_ids array  (position order)
-        if result.present?
-          result.where(id: related_ids).order(:position)
-        end
-
-        result
+        result.where(id: related_ids).order(:position)
       end
 
       # Simple accessor for the class-level relation_filter_for_relation_type.

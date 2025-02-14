@@ -1,17 +1,21 @@
 # frozen_string_literal: true
 
-class Spree::RelationType < ApplicationRecord
-  has_many :relations, dependent: :destroy
+module Spree
+  class RelationType < ApplicationRecord
+    has_many :relations, dependent: :destroy
 
-  validates :name, :applies_from, :applies_to, presence: true
-  validates :name, uniqueness: { case_sensitive: false }
-  validate :allowed_bidirectional, if: :bidirectional?
+    validates :name, :applies_from, :applies_to, presence: true
+    validates :name, uniqueness: { case_sensitive: false }
+    validate :validate_bidirectional, if: :bidirectional?
 
-  attr_readonly :bidirectional
+    attr_readonly :bidirectional
 
-  private
+    private
 
-  def allowed_bidirectional
-    errors.add(:bidirectional, :bidirectional_not_allowed) unless applies_from == applies_to
+    def validate_bidirectional
+      return if applies_from == applies_to
+
+      errors.add(:bidirectional, :bidirectional_not_allowed)
+    end
   end
 end
