@@ -4,6 +4,8 @@ module Spree
   module Admin
     module Variants
       class RelationsController < BaseController
+        include Spree::RelatedToFinder
+
         before_action :load_data, only: [:create, :destroy]
 
         respond_to :js, :html
@@ -11,8 +13,7 @@ module Spree
         def create
           @relation = Relation.new(relation_params)
           @relation.relatable = @variant
-          @relation.related_to = @relation.relation_type.applies_to
-                                          .constantize.find(relation_params[:related_to_id])
+          @relation.related_to = find_related_to
           @relation.save
 
           respond_with(@relation)
@@ -20,10 +21,10 @@ module Spree
 
         def update
           @relation = Relation.find(params[:id])
-          if @relation.update(relation_params)
-            flash[:success] = flash_message_for(@relation, :successfully_updated)
-            redirect_to(edit_admin_product_variant_path(@relation.relatable.product, @relation.relatable))
-          end
+          return unless @relation.update(relation_params)
+
+          flash[:success] = flash_message_for(@relation, :successfully_updated)
+          redirect_to(edit_admin_product_variant_path(@relation.relatable.product, @relation.relatable))
         end
 
         def update_positions
@@ -42,14 +43,18 @@ module Spree
             flash[:success] = flash_message_for(@relation, :successfully_removed)
 
             respond_with(@relation) do |format|
-              format.html { redirect_back(fallback_location: edit_admin_product_variant_path(@variant.product, @variant)) }
+              format.html {
+                redirect_back(fallback_location: edit_admin_product_variant_path(@variant.product, @variant))
+              }
               format.js   { render partial: "spree/admin/shared/destroy" }
             end
 
           else
 
             respond_with(@relation) do |format|
-              format.html { redirect_back(fallback_location: edit_admin_product_variant_path(@variant.product, @variant)) }
+              format.html {
+                redirect_back(fallback_location: edit_admin_product_variant_path(@variant.product, @variant))
+              }
             end
           end
         end
@@ -57,20 +62,8 @@ module Spree
         private
 
         def relation_params
-          params.require(:relation).permit(*permitted_attributes)
-        end
-
-        def permitted_attributes
-          [
-            :related_to,
-            :relation_type,
-            :relatable,
-            :related_to_id,
-            :discount_amount,
-            :description,
-            :relation_type_id,
-            :position
-          ]
+          params.require(:relation).permit(:related_to, :relation_type, :relatable, :related_to_id, :discount_amount,
+            :description, :relation_type_id, :position)
         end
 
         def load_data
