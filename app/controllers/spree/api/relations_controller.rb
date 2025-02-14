@@ -3,6 +3,8 @@
 module Spree
   module Api
     class RelationsController < Spree::Api::BaseController
+      include Spree::RelatedToFinder
+
       before_action :load_data, only: [:create, :destroy]
       before_action :find_relation, only: [:update, :destroy]
 
@@ -10,8 +12,8 @@ module Spree
         authorize! :create, Relation
         @relation = @product.relations.new(relation_params)
         @relation.relatable = @product
-        @relation.related_to = @relation.relation_type.applies_to
-                                        .constantize.find(relation_params[:related_to_id])
+        @relation.related_to = find_related_to
+
         if @relation.save
           render json: @relation.to_json, status: :created
         else
@@ -49,21 +51,11 @@ module Spree
       private
 
       def relation_params
-        params.require(:relation).permit(*permitted_attributes)
-      end
-
-      def permitted_attributes
-        [
-          :related_to,
-          :relation_type,
-          :relatable,
-          :related_to_id,
-          :discount_amount,
-          :description,
-          :relation_type_id,
-          :related_to_type,
-          :position
-        ]
+        params.require(:relation).permit(
+          :related_to, :relation_type, :relatable, :related_to_id,
+          :discount_amount, :description, :relation_type_id,
+          :related_to_type, :position
+        )
       end
 
       def load_data
