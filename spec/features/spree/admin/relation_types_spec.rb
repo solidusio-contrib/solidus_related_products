@@ -91,7 +91,7 @@ RSpec.describe 'Admin Relation Types', :js do
       end
 
       it 'does not show bidirectional checkbox' do
-        expect(page).to_not have_field 'Bi-Directional'
+        expect(page).not_to have_field 'Bi-Directional'
       end
 
       it 'can update an existing relation type' do

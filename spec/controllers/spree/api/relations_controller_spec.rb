@@ -65,7 +65,9 @@ RSpec.describe Spree::Api::RelationsController, type: :controller do
         expect {
           put :update, params: params
         }.to change { relation.reload.discount_amount.to_s }.from('0.0').to('2.0')
-                                                            .and change { relation.reload.description }.from(nil).to('Related Description')
+                                                            .and change {
+                                                                   relation.reload.description
+                                                                 }.from(nil).to('Related Description')
       end
     end
 

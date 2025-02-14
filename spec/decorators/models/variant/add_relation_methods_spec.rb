@@ -7,7 +7,7 @@ module SolidusRelatedProducts
         let(:klass) { Class.new(ApplicationRecord) }
 
         it 'adds relation removal hook with after_destroy' do
-          expect(klass).to receive(:after_destroy).with(:destroy_variant_relations)
+          expect(klass).to receive(:after_destroy).with(:destroy_variant_relations_to)
           klass.prepend(described_class)
         end
 
@@ -19,7 +19,7 @@ module SolidusRelatedProducts
           end
 
           it 'adds relation removal hook with after_discard' do
-            expect(klass).to receive(:after_discard).with(:destroy_variant_relations)
+            expect(klass).to receive(:after_discard).with(:destroy_variant_relations_to)
             klass.prepend(described_class)
           end
         end

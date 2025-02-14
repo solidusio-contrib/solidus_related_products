@@ -34,7 +34,8 @@ RSpec.describe Spree::Calculator::RelatedProductDiscount, type: :model do
         related_product = create(:product)
         relation_type   = create(:product_relation_type)
 
-        create(:product_relation, relatable: product, related_to: related_product, relation_type: relation_type, discount_amount: 1.0, description: 'Related Description')
+        create(:product_relation, relatable: product, related_to: related_product, relation_type: relation_type,
+          discount_amount: 1.0, description: 'Related Description')
       end
 
       # TODO: figure out what this test is trying to accomplish
