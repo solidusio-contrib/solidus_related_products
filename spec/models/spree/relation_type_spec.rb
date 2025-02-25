@@ -30,7 +30,7 @@ RSpec.describe Spree::RelationType, type: :model do
         subject { build(:relation_type, :from_product_to_variant) }
 
         it { expect(subject).to allow_values(false, nil).for(:bidirectional) }
-        it { expect(subject).to_not allow_value(true).for(:bidirectional) }
+        it { expect(subject).not_to allow_value(true).for(:bidirectional) }
       end
     end
   end

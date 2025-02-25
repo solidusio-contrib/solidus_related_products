@@ -51,7 +51,8 @@ RSpec.describe Spree::Api::Variants::RelationsController, type: :controller do
       end
 
       it 'responds 422 error with invalid params' do
-        post :create, params: { product_id: product.id, variant_id: variant.id, token: user.spree_api_key, format: :json }
+        post :create,
+          params: { product_id: product.id, variant_id: variant.id, token: user.spree_api_key, format: :json }
         expect(response.status).to eq(422)
       end
     end
@@ -68,14 +69,18 @@ RSpec.describe Spree::Api::Variants::RelationsController, type: :controller do
         expect {
           put :update, params: params
         }.to change { relation.reload.discount_amount.to_s }.from('0.0').to('2.0')
-                                                            .and change { relation.reload.description }.from(nil).to('Related Description')
+                                                            .and change {
+                                                                   relation.reload.description
+                                                                 }.from(nil).to('Related Description')
       end
     end
 
     describe '#destroy with' do
       it 'records successfully' do
         expect {
-          delete :destroy, params: { id: relation.id, product_id: product.id, variant_id: variant.id, token: user.spree_api_key, format: :json }
+          delete :destroy,
+            params: { id: relation.id, product_id: product.id, variant_id: variant.id, token: user.spree_api_key,
+                      format: :json }
         }.to change(Spree::Relation, :count).by(-1)
       end
     end

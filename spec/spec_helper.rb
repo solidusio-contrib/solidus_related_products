@@ -11,8 +11,7 @@ dummy_env = "#{__dir__}/dummy/config/environment.rb"
 system 'bin/rake extension:test_app' unless File.exist? dummy_env
 require dummy_env
 
-# Require webdrivers
-require 'webdrivers'
+require "selenium/webdriver"
 
 # Requires factories and other useful helpers defined in spree_core.
 require 'solidus_dev_support/rspec/feature_helper'
