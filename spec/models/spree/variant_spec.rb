@@ -54,7 +54,8 @@ RSpec.describe Spree::Variant, type: :model do
         other_relation_type = Spree::RelationType.new(name: 'Recommended Products', applies_from: 'Spree::Variant')
 
         relation1 = create(:product_relation, relatable: @variant, related_to: other1, relation_type: @relation_type)
-        relation2 = create(:product_relation, relatable: @variant, related_to: other1, relation_type: other_relation_type)
+        relation2 = create(:product_relation, relatable: @variant, related_to: other1,
+          relation_type: other_relation_type)
 
         @variant.reload
         expect(@variant.relations).to include(relation1)

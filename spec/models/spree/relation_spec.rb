@@ -34,9 +34,9 @@ RSpec.describe Spree::Relation, type: :model do
     describe 'after create' do
       context 'when relation type is not bi-directional' do
         it 'does not add an inverse relation' do
-          expect { create(:product_relation) }.to change { Spree::Relation.count }.from(0).to(1)
+          expect { create(:product_relation) }.to change(described_class, :count).from(0).to(1)
 
-          expect(inverse_relation).to_not be_present
+          expect(inverse_relation).not_to be_present
         end
       end
 
@@ -44,7 +44,7 @@ RSpec.describe Spree::Relation, type: :model do
         subject { create(:product_relation, :bidirectional, description: 'Lorem Ipsum') }
 
         it 'adds an inverse relation' do
-          expect { subject }.to change { Spree::Relation.count }.from(0).to(2)
+          expect { subject }.to change(described_class, :count).from(0).to(2)
 
           expect(inverse_relation).to be_present
         end
@@ -52,10 +52,10 @@ RSpec.describe Spree::Relation, type: :model do
     end
 
     describe 'after save' do
+      subject { create(:product_relation, :bidirectional, description: old_description) }
+
       let(:old_description) { 'old description' }
       let(:new_description) { 'Lorem Ipsum' }
-
-      subject { create(:product_relation, :bidirectional, description: old_description) }
 
       it 'changes the inverse relation description' do
         expect(inverse_relation.description).to eq(old_description)
@@ -73,7 +73,7 @@ RSpec.describe Spree::Relation, type: :model do
         let!(:product_relation) { create(:product_relation, description: 'Lorem Ipsum') }
 
         it 'does not destroy the inverse relation' do
-          expect { subject }.to change { Spree::Relation.count }.from(1).to(0)
+          expect { subject }.to change(described_class, :count).from(1).to(0)
         end
       end
 
@@ -81,9 +81,9 @@ RSpec.describe Spree::Relation, type: :model do
         let!(:product_relation) { create(:product_relation, :bidirectional, description: 'Lorem Ipsum') }
 
         it 'destroyes the inverse relation' do
-          expect { subject }.to change { Spree::Relation.count }.from(2).to(0)
+          expect { subject }.to change(described_class, :count).from(2).to(0)
 
-          expect(inverse_relation).to_not be_present
+          expect(inverse_relation).not_to be_present
         end
       end
     end

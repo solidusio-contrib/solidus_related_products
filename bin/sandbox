@@ -22,7 +22,7 @@ if [ ! -z $SOLIDUS_BRANCH ]
 then
   BRANCH=$SOLIDUS_BRANCH
 else
-  BRANCH="master"
+  BRANCH="main"
 fi
 
 extension_name="solidus_related_products"
@@ -50,9 +50,9 @@ fi
 cd ./sandbox
 cat <<RUBY >> Gemfile
 gem 'solidus', github: 'solidusio/solidus', branch: '$BRANCH'
-gem 'solidus_auth_devise', '>= 2.1.0'
 gem 'rails-i18n'
 gem 'solidus_i18n'
+gem 'coffee-rails'
 
 gem '$extension_name', path: '..'
 
@@ -69,14 +69,10 @@ unbundled bundle exec rake db:drop db:create
 
 unbundled bundle exec rails generate solidus:install \
   --auto-accept \
-  --user_class=Spree::User \
-  --enforce_available_locales=true \
-  --with-authentication=false \
   --payment-method=none \
   $@
 
-unbundled bundle exec rails generate solidus:auth:install
-unbundled bundle exec rails generate ${extension_name}:install
+unbundled bundle exec rails generate ${extension_name}:install --auto-run-migrations=true
 
 echo
 echo "🚀 Sandbox app successfully created for $extension_name!"

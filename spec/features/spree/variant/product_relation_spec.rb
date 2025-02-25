@@ -7,8 +7,12 @@ RSpec.describe 'Admin Variant Relation', :js do
   let!(:other_product)   { create(:product) }
   let!(:other_variant)   { create(:variant, is_master: false) }
 
-  let!(:product_relation_type) { create(:product_relation_type, name: 'Related Products', applies_from: 'Spree::Variant') }
-  let!(:variant_relation_type) { create(:variant_relation_type, name: 'Related Variants', applies_from: 'Spree::Variant') }
+  let!(:product_relation_type) {
+    create(:product_relation_type, name: 'Related Products', applies_from: 'Spree::Variant')
+  }
+  let!(:variant_relation_type) {
+    create(:variant_relation_type, name: 'Related Variants', applies_from: 'Spree::Variant')
+  }
 
   before do
     visit spree.edit_admin_product_variant_path(variant.product, variant)
