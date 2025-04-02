@@ -7,40 +7,56 @@ module Spree
     end
 
     def compute(object)
-      if object.is_a?(Array)
-        return if object.empty?
+      return if object.is_a?(Array) && object.empty?
 
-        order = object.first.order
-      else
-        order = object
-      end
-
+      order = object.is_a?(Array) ? object.first.order : object
       return unless eligible?(order)
 
-      total = order.line_items.inject(0) do |sum, line_item|
-        relations = Spree::Relation.where(*discount_query(line_item))
-        discount_applies_to = relations.map { |rel| rel.related_to.variant }
-
-        order.line_items.each do |li|
-          next li unless discount_applies_to.include? li.variant
-
-          discount = relations.detect { |rel| rel.related_to.variant == li.variant }.discount_amount
-          sum += if li.quantity < line_item.quantity
-                   (discount * li.quantity)
-                 else
-                   (discount * line_item.quantity)
-                 end
-        end
-
-        sum
-      end
-
-      total
+      calculate_total_discount(order)
     end
 
     def eligible?(order)
-      order.line_items.any? do |line_item|
-        Spree::Relation.exists?(discount_query(line_item))
+      order.line_items.any? { |line_item| Spree::Relation.exists?(discount_query(line_item)) }
+    end
+
+    def calculate_total_discount(order)
+      order.line_items.sum do |line_item|
+        calculate_line_item_discount(line_item, order)
+      end
+    end
+
+    def calculate_line_item_discount(line_item, order)
+      relations = fetch_discount_relations(line_item)
+      discount_applies_to = filter_discounted_variants(relations)
+
+      discount_sum = 0
+      order.line_items.each do |li|
+        next li unless discount_applies_to.include? li.variant
+
+        discount = find_discount_for_variant(relations, li.variant)
+        discount_sum += calculate_discount_for_quantity(discount, li, line_item)
+      end
+
+      discount_sum
+    end
+
+    def fetch_discount_relations(line_item)
+      Spree::Relation.where(*discount_query(line_item))
+    end
+
+    def filter_discounted_variants(relations)
+      relations.map { |rel| rel.related_to.variant }
+    end
+
+    def find_discount_for_variant(relations, variant)
+      relations.detect { |rel| rel.related_to.variant == variant }.discount_amount
+    end
+
+    def calculate_discount_for_quantity(discount, line_item, reference_line_item)
+      if line_item.quantity < reference_line_item.quantity
+        discount * line_item.quantity
+      else
+        discount * reference_line_item.quantity
       end
     end
 

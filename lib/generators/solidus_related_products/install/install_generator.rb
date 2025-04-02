@@ -6,7 +6,8 @@ module SolidusRelatedProducts
       class_option :auto_run_migrations, type: :boolean, default: false
 
       def add_javascripts
-        append_file 'vendor/assets/javascripts/spree/backend/all.js', "//= require spree/backend/solidus_related_products\n"
+        append_file 'vendor/assets/javascripts/spree/backend/all.js',
+          "//= require spree/backend/solidus_related_products\n"
         empty_directory 'app/assets/javascripts'
       end
 
