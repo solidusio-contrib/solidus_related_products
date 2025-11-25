@@ -34,7 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'solidus_core', ['>= 2.0.0', '< 5']
   spec.add_dependency 'solidus_support', '~> 0.8'
 
-  spec.add_development_dependency 'autoprefixer-rails', '~> 10.2.5'
+  spec.add_development_dependency 'autoprefixer-rails', '~> 10.4.21'
   spec.add_development_dependency 'rspec-activemodel-mocks'
   spec.add_development_dependency 'shoulda-matchers'
   spec.add_development_dependency 'solidus_dev_support', '~> 2.7'
