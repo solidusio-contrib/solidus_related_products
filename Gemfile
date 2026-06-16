@@ -15,6 +15,16 @@ else
   gem 'solidus_frontend', github: 'solidusio/solidus', branch: branch
 end
 
+# solidus_legacy_promotions was extracted from solidus_core in v4.4. Pull it from
+# the same monorepo so the engine's legacy-promotions registration path is loaded
+# and exercised by the engine spec.
+if branch == 'main' || branch >= 'v4.4'
+  gem 'solidus_legacy_promotions',
+      github: 'solidusio/solidus',
+      branch: branch,
+      glob: 'legacy_promotions/*.gemspec'
+end
+
 gem 'coffee-rails', '~> 5.0'
 
 rails_version = ENV.fetch('RAILS_VERSION', '7.2')

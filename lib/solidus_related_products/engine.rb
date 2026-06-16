@@ -12,7 +12,15 @@ module SolidusRelatedProducts
     engine_name 'solidus_related_products'
 
     initializer 'spree.promo.register.promotion.calculators' do |app|
-      app.config.spree.calculators.promotion_actions_create_adjustments << "Spree::Calculator::RelatedProductDiscount"
+      if defined?(SolidusLegacyPromotions::Config)
+        # Solidus 4+: legacy promotions extracted into solidus_legacy_promotions
+        SolidusLegacyPromotions::Config.calculators["Spree::Promotion::Actions::CreateAdjustment"] <<
+          "Spree::Calculator::RelatedProductDiscount"
+      elsif Spree.solidus_gem_version < Gem::Version.new("4.0")
+        # Solidus 2/3: legacy promotions still live in core
+        app.config.spree.calculators.promotion_actions_create_adjustments <<
+          "Spree::Calculator::RelatedProductDiscount"
+      end
     end
 
     class << self
