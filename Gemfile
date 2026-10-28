@@ -39,7 +39,7 @@ else
   gem 'sqlite3', '~> 2.0'
 end
 
-gem 'rspec-rails', '~> 6.0.3', require: false
+gem 'rspec-rails', '~> 6.1.5', require: false
 gem 'database_cleaner', '~> 2.0', require: false
 
 gemspec
